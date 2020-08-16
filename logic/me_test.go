@@ -37,11 +37,11 @@ func TestCreateImageByBackgroundImage(t *testing.T) {
 		t.Errorf("Create() error = %v", err)
 		return
 	}
+	defer file.Close()
 	if err := me.CreateImage(file); err != nil {
 		t.Errorf("Create() error = %v", err)
 		return
 	}
-	file.Close()
 }
 
 func TestCreateImage(t *testing.T) {
@@ -55,9 +55,9 @@ func TestCreateImage(t *testing.T) {
 		t.Errorf("Create() error = %v", err)
 		return
 	}
+	defer file.Close()
 	if err := me.CreateImage(file); err != nil {
 		t.Errorf("Create() error = %v", err)
 		return
 	}
-	file.Close()
 }

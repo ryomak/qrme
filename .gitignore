@@ -1,2 +1,4 @@
 logic/*.png
+logic/.envrc
 .envrc
+web/vendor

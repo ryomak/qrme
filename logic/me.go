@@ -28,7 +28,15 @@ func (me Me) GetWebURL() string {
 	if host == "" {
 		host = "http://xxxx.com"
 	}
-	return fmt.Sprintf("%s/user/%s", host, me.Unique)
+	return fmt.Sprintf("%s/profile/%s", host, me.Unique)
+}
+
+func (me Me) PostWebURL() string {
+	host := os.Getenv("WEB_HOST")
+	if host == "" {
+		host = "http://xxxx.com"
+	}
+	return fmt.Sprintf("%s/profile", host)
 }
 
 func (me *Me) CreateImage(w io.Writer) error {
