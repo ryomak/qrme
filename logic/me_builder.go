@@ -2,7 +2,10 @@ package logic
 
 import (
 	"image"
-	"log"
+
+	"github.com/rs/xid"
+
+	_ "github.com/ryomak/qrme/logic/statik"
 )
 
 type MeBuilder struct {
@@ -39,17 +42,20 @@ func (mb *MeBuilder) Setting(color, backgroundColor *Color, backgroundImage *ima
 		c := defaultColor["background"]
 		backgroundColor = &c
 	}
+	width := 1200
+	height := 630
+	if backgroundImage != nil {
+		im := *backgroundImage
+		width = im.Bounds().Dx()
+		height = im.Bounds().Dy()
+	}
 	mb.me.Setting = &Setting{
 		Color:           *color,
 		BackgroundColor: backgroundColor,
 		BackgroundImage: backgroundImage,
-		Width:           1200,
-		Height:          630,
+		Width:           width,
+		Height:          height,
 	}
-	if err := mb.me.Setting.SetFontFromFile("../font/Koruri-Light.ttf"); err != nil {
-		log.Fatal(err)
-	}
-
 	return mb
 }
 
@@ -83,7 +89,7 @@ func (mb *MeBuilder) Social(socials []Social) *MeBuilder {
 	return mb
 }
 
-func (mb *MeBuilder) Build() *Me {
+func (mb *MeBuilder) Build() (*Me, error) {
 	if mb.me.Setting == nil {
 		mb.Setting(nil, nil, nil)
 	}
@@ -93,5 +99,9 @@ func (mb *MeBuilder) Build() *Me {
 	if mb.me.Socials == nil {
 		mb.me.Socials = []Social{}
 	}
-	return mb.me
+	if err := mb.me.Setting.SetFontFromFile("Koruri-Light.ttf"); err != nil {
+		return nil, err
+	}
+	mb.me.Unique = xid.New().String()
+	return mb.me, nil
 }

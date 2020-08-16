@@ -4,7 +4,11 @@ import (
 	"image"
 	"image/color"
 	"io/ioutil"
+	"path/filepath"
 
+	_ "github.com/ryomak/qrme/logic/statik"
+
+	"github.com/rakyll/statik/fs"
 	"golang.org/x/image/font"
 
 	"github.com/golang/freetype"
@@ -15,7 +19,7 @@ type Setting struct {
 	Color           Color
 	BackgroundColor *Color
 	BackgroundImage *image.Image
-	FontFace        font.Face
+	FontFace        map[string]font.Face
 	Width           int
 	Height          int
 }
@@ -24,11 +28,29 @@ func (s Setting) HasBackgroundImage() bool {
 	return s.BackgroundImage != nil
 }
 
-func (s *Setting) SetFontFromFile(filepath string) error {
-	opt := truetype.Options{
-		Size: FontSize,
+func (s Setting) GetBigFontSize() float64 {
+	return float64(s.Height) / 5
+}
+
+func (s Setting) GetMidFontSize() float64 {
+	return float64(s.Height) / 8
+}
+
+func (s Setting) GetSmallFontSize() float64 {
+	return float64(s.Height) / 10
+}
+
+func (s *Setting) SetFontFromFile(filename string) error {
+	statikFS, err := fs.New()
+	if err != nil {
+		return err
 	}
-	fntBytes, err := ioutil.ReadFile(filepath)
+	r, err := statikFS.Open(filepath.Join("/", "font", filename))
+	if err != nil {
+		return err
+	}
+	defer r.Close()
+	fntBytes, err := ioutil.ReadAll(r)
 	if err != nil {
 		return err
 	}
@@ -36,8 +58,17 @@ func (s *Setting) SetFontFromFile(filepath string) error {
 	if err != nil {
 		return err
 	}
-	face := truetype.NewFace(fnt, &opt)
-	s.FontFace = face
+	faceMap := make(map[string]font.Face)
+	faceMap["big"] = truetype.NewFace(fnt, &truetype.Options{
+		Size: s.GetBigFontSize(),
+	})
+	faceMap["mid"] = truetype.NewFace(fnt, &truetype.Options{
+		Size: s.GetMidFontSize(),
+	})
+	faceMap["small"] = truetype.NewFace(fnt, &truetype.Options{
+		Size: s.GetSmallFontSize(),
+	})
+	s.FontFace = faceMap
 	return nil
 }
 
