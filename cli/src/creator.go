@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"io"
 	"net/http"
 	"os"
 
@@ -16,14 +17,10 @@ func Create(me *logic.Me) error {
 		return err
 	}
 	defer file.Close()
-	if err := me.CreateImage(file); err != nil {
-		return err
-	}
-	// image to save gcs
-	fi, _ := file.Stat()
-	size := fi.Size()
-	data := make([]byte, size)
-	if _, err := file.Read(data); err != nil {
+
+	buf := bytes.NewBuffer(nil)
+	writer := io.MultiWriter(file, buf)
+	if err := me.CreateImage(writer); err != nil {
 		return err
 	}
 	var params struct {
@@ -31,7 +28,7 @@ func Create(me *logic.Me) error {
 		Image string `json:"image"`
 	}
 	params.Uid = me.Unique
-	params.Image = base64.StdEncoding.EncodeToString(data)
+	params.Image = base64.StdEncoding.EncodeToString(buf.Bytes())
 
 	jsonData, err := json.Marshal(params)
 	if err != nil {
