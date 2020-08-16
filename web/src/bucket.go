@@ -18,7 +18,7 @@ type Image struct {
 func NewProfileImage(uid, content string) Image {
 	return Image{
 		Bucket:  GetCloudBucketImage(),
-		Object:  fmt.Sprintf("user/%s/profile.png", uid),
+		Object:  fmt.Sprintf("profile/%s.png", uid),
 		Content: content,
 	}
 }
